@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.unsplash_pinterest">
-   <application
-        android:label="unsplash_pinterest"
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application
+        android:label="Pinterest Clone"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

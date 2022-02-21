@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart';
+import 'package:unsplash_pinterest/models/collections_model.dart';
 import 'package:unsplash_pinterest/models/post_model.dart';
 
 class Network {
@@ -10,7 +11,7 @@ class Network {
 
   static Map<String, String> getHeaders() {
     Map<String, String> headers = {
-      'Content-Type': 'application/json; charset=UTF-8',
+      'Content-Type': 'application/json',
       'Accept-Version': 'v1',
       'Authorization': 'Client-ID zYGJr9DhtNKBrx-M5SL9b4QJe3j9kxXlYQtZVB10st8'
     };
@@ -66,6 +67,7 @@ class Network {
 
   /* Http Apis */
   static String API_LIST = "/photos";
+  static String API_COLLECTIONS = "/collections";
   static String API_SEARCH = "/search/photos";
   static String API_ONE = "/photos/"; //{id}
   static String API_CREATE = "/photos";
@@ -100,6 +102,12 @@ class Network {
     List json = jsonDecode(response);
     List<Post> photos = List<Post>.from(json.map((x) => Post.fromJson(x)));
     return photos;
+  }
+
+  static List<Collections> parseCollectionResponse(String response) {
+    List json = jsonDecode(response);
+    List<Collections> collections = List<Collections>.from(json.map((x) => Collections.fromJson(x)));
+    return collections;
   }
 
   static List<Post> parseSearchParse(String response) {

@@ -1,14 +1,17 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:unsplash_pinterest/models/post_model.dart';
+import 'package:unsplash_pinterest/pages/main_pages/chat_pages/chat_page.dart';
+import 'package:unsplash_pinterest/pages/main_pages/profile_pages/profile_page.dart';
+import 'package:unsplash_pinterest/pages/main_pages/search_page.dart';
+import 'package:unsplash_pinterest/services/grid_view_service.dart';
 import 'package:unsplash_pinterest/services/http_service.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:unsplash_pinterest/services/utils_service.dart';
 
 class HomePage extends StatefulWidget {
   static const String id = "home_page";
-
   const HomePage({Key? key}) : super(key: key);
 
   @override
@@ -16,16 +19,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int selectedIndex = 0;
+  final PageController _pageController = PageController();
   bool isLoading = true;
   bool isLoadPage = false;
-  int selectedIndex = 0;
-  List<Post> posts = [Post()];
+  List<Post> posts = [];
   int postsLength = 0;
   final ScrollController _scrollController = ScrollController();
-  final homePage = GlobalKey<NavigatorState>();
-  final searchPage = GlobalKey<NavigatorState>();
-  final chatPage = GlobalKey<NavigatorState>();
-  final profilePage = GlobalKey<NavigatorState>();
 
   void _apiLoadList() async {
     await Network.GET(Network.API_LIST, Network.paramsEmpty())
@@ -36,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       isLoading = false;
       posts = Network.parseResponse(response);
+      posts.shuffle();
       postsLength = posts.length;
     });
   }
@@ -51,20 +52,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // void searchPost(String search) async {
-  //   int pageNumber = (posts.length ~/ postsLength + 1);
-  //   String? response = await Network.GET(
-  //       Network.API_SEARCH, Network.paramsSearch(search, pageNumber));
-  //   List<Post> newPosts = Network.parseSearchParse(response!);
-  //   setState(() {
-  //     posts = newPosts;
-  //   });
-  // }
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _apiLoadList();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
@@ -86,50 +78,91 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       extendBody: true,
-      backgroundColor: Colors.white,
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator.adaptive(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.black)))
-          : Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.only(top: 40, bottom: 10),
-            height: 100,
-            child: Container(
-                width: MediaQuery.of(context).size.width * 0.18,
-                alignment: Alignment.center,
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(30)),
-                child: const Text(
-                  "All",
-                  style: TextStyle(fontSize: 17, color: Colors.white),
-                )),
+          : WillPopScope(
+        onWillPop: () async {
+          if (selectedIndex != 0) {
+            setState(() {
+              selectedIndex=0;
+              _pageController.jumpToPage(selectedIndex);
+            });
+            return false;
+          } else {
+            if (Platform.isAndroid) {
+              SystemNavigator.pop();
+            } else {
+              exit(0);
+            }
+            return false;
+          }
+        },
+            child: PageView(
+                physics: const NeverScrollableScrollPhysics(),
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    selectedIndex = index;
+                  });
+                },
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.only(top: 40, bottom: 10),
+                        height: 90,
+                        child: Container(
+                            width: MediaQuery.of(context).size.width * 0.18,
+                            alignment: Alignment.center,
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(30)),
+                            child: const Text(
+                              "All",
+                              style: TextStyle(fontSize: 17, color: Colors.white),
+                            )),
+                      ),
+                      isLoadPage
+                          ? const LinearProgressIndicator(
+                              backgroundColor: Colors.transparent,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.red))
+                          : const SizedBox.shrink(),
+                      Expanded(
+                          child: RefreshIndicator(
+                            color: Colors.red,
+                            onRefresh: ()async{
+                              _apiLoadList();
+                            },
+                            child: MasonryGridView.count(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                itemCount: posts.length,
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 11,
+                                crossAxisSpacing: 10,
+                                itemBuilder: (context, index) {
+                                  return GridWidget(
+                                    post: posts[index],
+                                  );
+                                }),
+                          )),
+                    ],
+                  ),
+                  const SearchPage(),
+                  const ChatPage(),
+                  const ProfilePage()
+                ],
+              ),
           ),
-          isLoadPage
-              ? const LinearProgressIndicator(
-              backgroundColor: Colors.transparent,
-              valueColor:
-              AlwaysStoppedAnimation<Color>(Colors.red))
-              : const SizedBox.shrink(),
-          Expanded(
-              child: MasonryGridView.count(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  itemCount: posts.length,
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 11,
-                  crossAxisSpacing: 10,
-                  itemBuilder: (context, index) {
-                    return _posts(posts[index]);
-                  })),
-        ],
-      ),
       bottomNavigationBar: Container(
         height: 58,
         decoration: BoxDecoration(
@@ -144,6 +177,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               selectedIndex = index;
             });
+            _pageController.jumpToPage(selectedIndex);
           },
           elevation: 0,
           type: BottomNavigationBarType.fixed,
@@ -187,53 +221,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _posts(Post post) {
-    return Column(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: CachedNetworkImage(
-            imageUrl: post.urls!.regular!,
-            placeholder: (context, url) =>
-                Image.asset("assets/images/default.png"),
-            errorWidget: (context, url, error) =>
-                Image.asset("assets/images/default.png"),
-          ),
-        ),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          dense: true,
-          horizontalTitleGap: 0,
-          minVerticalPadding: 0,
-          leading: SizedBox(
-            height: 30,
-            width: 30,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: CachedNetworkImage(
-                fit: BoxFit.cover,
-                imageUrl: post.user!.profileImage!.large!,
-                placeholder: (context, url) =>
-                    Image.asset("assets/images/default.png"),
-                errorWidget: (context, url, error) =>
-                    Image.asset("assets/images/default.png"),
-              ),
-            ),
-          ),
-          title: Text(post.user!.name!),
-          trailing: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () {},
-            child: const Icon(
-              Icons.more_horiz,
-              color: Colors.black,
-            ),
-          ),
-        )
-      ],
     );
   }
 }

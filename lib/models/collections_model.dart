@@ -1,10 +1,91 @@
+// To parse this JSON data, do
+//
+//     final collections = collectionsFromJson(jsonString);
+
 import 'dart:convert';
-Post postFromJson(String str) => Post.fromJson(json.decode(str));
 
-String postToJson(Post data) => json.encode(data.toJson());
+Collections collectionsFromJson(String str) => Collections.fromJson(json.decode(str));
 
-class Post {
-  Post({
+String collectionsToJson(Collections data) => json.encode(data.toJson());
+
+class Collections {
+  Collections({
+    this.id,
+    this.title,
+    this.description,
+    this.publishedAt,
+    this.lastCollectedAt,
+    this.updatedAt,
+    this.curated,
+    this.featured,
+    this.totalPhotos,
+    this.private,
+    this.shareKey,
+    this.tags,
+    this.links,
+    this.user,
+    this.coverPhoto,
+    this.previewPhotos,
+  });
+
+  String? id;
+  String? title;
+  dynamic description;
+  DateTime? publishedAt;
+  DateTime? lastCollectedAt;
+  DateTime? updatedAt;
+  bool? curated;
+  bool? featured;
+  int? totalPhotos;
+  bool? private;
+  String? shareKey;
+  List<Tag>? tags;
+  CollectionsLinks ?links;
+  User? user;
+  CoverPhoto? coverPhoto;
+  List<PreviewPhoto>? previewPhotos;
+
+  factory Collections.fromJson(Map<String, dynamic> json) => Collections(
+    id: json["id"],
+    title: json["title"],
+    description: json["description"],
+    publishedAt: json["published_at"] == null ? null : DateTime.parse(json["published_at"]),
+    lastCollectedAt: json["last_collected_at"] == null ? null : DateTime.parse(json["last_collected_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    curated: json["curated"],
+    featured: json["featured"],
+    totalPhotos: json["total_photos"],
+    private: json["private"],
+    shareKey: json["share_key"],
+    tags: json["tags"] == null ? null : List<Tag>.from(json["tags"].map((x) => Tag.fromJson(x))),
+    links: json["links"] == null ? null : CollectionsLinks.fromJson(json["links"]),
+    user: json["user"] == null ? null : User.fromJson(json["user"]),
+    coverPhoto: json["cover_photo"] == null ? null : CoverPhoto.fromJson(json["cover_photo"]),
+    previewPhotos: json["preview_photos"] == null ? null : List<PreviewPhoto>.from(json["preview_photos"].map((x) => PreviewPhoto.fromJson(x))),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "description": description,
+    "published_at": publishedAt?.toIso8601String(),
+    "last_collected_at": lastCollectedAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "curated": curated,
+    "featured": featured,
+    "total_photos": totalPhotos,
+    "private": private,
+    "share_key": shareKey,
+    "tags": tags == null ? null : List<dynamic>.from(tags!.map((x) => x.toJson())),
+    "links": links == null ? null : links!.toJson(),
+    "user": user == null ? null : user!.toJson(),
+    "cover_photo": coverPhoto == null ? null : coverPhoto!.toJson(),
+    "preview_photos": previewPhotos == null ? null : List<dynamic>.from(previewPhotos!.map((x) => x.toJson())),
+  };
+}
+
+class CoverPhoto {
+  CoverPhoto({
     this.id,
     this.createdAt,
     this.updatedAt,
@@ -15,7 +96,7 @@ class Post {
     this.blurHash,
     this.description,
     this.altDescription,
-    required this.urls,
+    this.urls,
     this.links,
     this.categories,
     this.likes,
@@ -34,19 +115,19 @@ class Post {
   int? height;
   String? color;
   String? blurHash;
-  dynamic description;
-  dynamic altDescription;
-  Urls urls;
-  PostLinks? links;
+  String? description;
+  String? altDescription;
+  Urls? urls;
+  CoverPhotoLinks? links;
   List<dynamic>? categories;
   int? likes;
   bool? likedByUser;
   List<dynamic>? currentUserCollections;
-  Sponsorship? sponsorship;
+  dynamic sponsorship;
   TopicSubmissions? topicSubmissions;
   User? user;
 
-  factory Post.fromJson(Map<String, dynamic> json) => Post(
+  factory CoverPhoto.fromJson(Map<String, dynamic> json) => CoverPhoto(
     id: json["id"],
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
@@ -57,21 +138,21 @@ class Post {
     blurHash: json["blur_hash"],
     description: json["description"],
     altDescription: json["alt_description"],
-    urls: Urls.fromJson(json["urls"]),
-    links: json["links"] == null ? null : PostLinks.fromJson(json["links"]),
+    urls: json["urls"] == null ? null : Urls.fromJson(json["urls"]),
+    links: json["links"] == null ? null : CoverPhotoLinks.fromJson(json["links"]),
     categories: json["categories"] == null ? null : List<dynamic>.from(json["categories"].map((x) => x)),
     likes: json["likes"],
     likedByUser: json["liked_by_user"],
     currentUserCollections: json["current_user_collections"] == null ? null : List<dynamic>.from(json["current_user_collections"].map((x) => x)),
-    sponsorship: json["sponsorship"] == null ? null : Sponsorship.fromJson(json["sponsorship"]),
+    sponsorship: json["sponsorship"],
     topicSubmissions: json["topic_submissions"] == null ? null : TopicSubmissions.fromJson(json["topic_submissions"]),
     user: json["user"] == null ? null : User.fromJson(json["user"]),
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
-    "created_at": createdAt?.toIso8601String(),
-    "updated_at": updatedAt?.toIso8601String(),
+    "created_at": createdAt == null ? null : createdAt!.toIso8601String(),
+    "updated_at": updatedAt == null ? null : updatedAt!.toIso8601String(),
     "promoted_at": promotedAt,
     "width": width,
     "height": height,
@@ -79,20 +160,20 @@ class Post {
     "blur_hash": blurHash,
     "description": description,
     "alt_description": altDescription,
-    "urls": urls.toJson(),
+    "urls": urls == null ? null : urls!.toJson(),
     "links": links == null ? null : links!.toJson(),
     "categories": categories == null ? null : List<dynamic>.from(categories!.map((x) => x)),
     "likes": likes,
     "liked_by_user": likedByUser,
     "current_user_collections": currentUserCollections == null ? null : List<dynamic>.from(currentUserCollections!.map((x) => x)),
-    "sponsorship": sponsorship == null ? null : sponsorship!.toJson(),
+    "sponsorship": sponsorship,
     "topic_submissions": topicSubmissions == null ? null : topicSubmissions!.toJson(),
     "user": user == null ? null : user!.toJson(),
   };
 }
 
-class PostLinks {
-  PostLinks({
+class CoverPhotoLinks {
+  CoverPhotoLinks({
     this.self,
     this.html,
     this.download,
@@ -104,7 +185,7 @@ class PostLinks {
   String? download;
   String? downloadLocation;
 
-  factory PostLinks.fromJson(Map<String, dynamic> json) => PostLinks(
+  factory CoverPhotoLinks.fromJson(Map<String, dynamic> json) => CoverPhotoLinks(
     self: json["self"],
     html: json["html"],
     download: json["download"],
@@ -119,31 +200,49 @@ class PostLinks {
   };
 }
 
-class Sponsorship {
-  Sponsorship({
-    this.impressionUrls,
-    this.tagline,
-    this.taglineUrl,
-    this.sponsor,
-  });
+class TopicSubmissions {
+  TopicSubmissions();
 
-  List<String>? impressionUrls;
-  String? tagline;
-  String? taglineUrl;
-  User? sponsor;
-
-  factory Sponsorship.fromJson(Map<String, dynamic> json) => Sponsorship(
-    impressionUrls: json["impression_urls"] == null ? null : List<String>.from(json["impression_urls"].map((x) => x)),
-    tagline: json["tagline"],
-    taglineUrl: json["tagline_url"],
-    sponsor: json["sponsor"] == null ? null : User.fromJson(json["sponsor"]),
+  factory TopicSubmissions.fromJson(Map<String, dynamic> json) => TopicSubmissions(
   );
 
   Map<String, dynamic> toJson() => {
-    "impression_urls": impressionUrls == null ? null : List<dynamic>.from(impressionUrls!.map((x) => x)),
-    "tagline": tagline,
-    "tagline_url": taglineUrl,
-    "sponsor": sponsor == null ? null : sponsor!.toJson(),
+  };
+}
+
+class Urls {
+  Urls({
+    this.raw,
+    this.full,
+    this.regular,
+    this.small,
+    this.thumb,
+    this.smallS3,
+  });
+
+  String? raw;
+  String? full;
+  String? regular;
+  String? small;
+  String? thumb;
+  String? smallS3;
+
+  factory Urls.fromJson(Map<String, dynamic> json) => Urls(
+    raw: json["raw"],
+    full: json["full"],
+    regular: json["regular"],
+    small: json["small"],
+    thumb: json["thumb"],
+    smallS3: json["small_s3"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "raw": raw,
+    "full": full,
+    "regular": regular,
+    "small": small,
+    "thumb": thumb,
+    "small_s3": smallS3,
   };
 }
 
@@ -175,14 +274,14 @@ class User {
   String? username;
   String? name;
   String? firstName;
-  dynamic lastName;
-  String? twitterUsername;
+  String? lastName;
+  dynamic twitterUsername;
   String? portfolioUrl;
   String? bio;
   dynamic location;
   UserLinks? links;
   ProfileImage? profileImage;
-  String? instagramUsername;
+  dynamic instagramUsername;
   int? totalCollections;
   int? totalLikes;
   int? totalPhotos;
@@ -307,9 +406,9 @@ class Social {
     this.paypalEmail,
   });
 
-  String? instagramUsername;
+  dynamic instagramUsername;
   String? portfolioUrl;
-  String? twitterUsername;
+  dynamic twitterUsername;
   dynamic paypalEmail;
 
   factory Social.fromJson(Map<String, dynamic> json) => Social(
@@ -327,48 +426,82 @@ class Social {
   };
 }
 
-class TopicSubmissions {
-  TopicSubmissions();
+class CollectionsLinks {
+  CollectionsLinks({
+    this.self,
+    this.html,
+    this.photos,
+    this.related,
+  });
 
-  factory TopicSubmissions.fromJson(Map<String, dynamic> json) => TopicSubmissions(
+  String? self;
+  String? html;
+  String? photos;
+  String? related;
+
+  factory CollectionsLinks.fromJson(Map<String, dynamic> json) => CollectionsLinks(
+    self: json["self"],
+    html: json["html"],
+    photos: json["photos"],
+    related: json["related"],
   );
 
   Map<String, dynamic> toJson() => {
+    "self": self,
+    "html": html,
+    "photos": photos,
+    "related": related,
   };
 }
 
-class Urls {
-  Urls({
-   required this.raw,
-    required this.full,
-    required this.regular,
-    required this.small,
-    required this.thumb,
-    required this.smallS3,
+class PreviewPhoto {
+  PreviewPhoto({
+    this.id,
+    this.createdAt,
+    this.updatedAt,
+    this.blurHash,
+    this.urls,
   });
 
-  String raw;
-  String full;
-  String regular;
-  String small;
-  String thumb;
-  String smallS3;
+  String? id;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  String? blurHash;
+  Urls? urls;
 
-  factory Urls.fromJson(Map<String, dynamic> json) => Urls(
-    raw: json["raw"],
-    full: json["full"],
-    regular: json["regular"],
-    small: json["small"],
-    thumb: json["thumb"],
-    smallS3: json["small_s3"],
+  factory PreviewPhoto.fromJson(Map<String, dynamic> json) => PreviewPhoto(
+    id: json["id"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    blurHash: json["blur_hash"],
+    urls: json["urls"] == null ? null : Urls.fromJson(json["urls"]),
   );
 
   Map<String, dynamic> toJson() => {
-    "raw": raw,
-    "full": full,
-    "regular": regular,
-    "small": small,
-    "thumb": thumb,
-    "small_s3": smallS3,
+    "id": id,
+    "created_at": createdAt == null ? null : createdAt!.toIso8601String(),
+    "updated_at": updatedAt == null ? null : updatedAt!.toIso8601String(),
+    "blur_hash": blurHash,
+    "urls": urls == null ? null : urls!.toJson(),
+  };
+}
+
+class Tag {
+  Tag({
+    this.type,
+    this.title,
+  });
+
+  String? type;
+  String? title;
+
+  factory Tag.fromJson(Map<String, dynamic> json) => Tag(
+    type: json["type"],
+    title: json["title"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "type": type,
+    "title": title,
   };
 }
