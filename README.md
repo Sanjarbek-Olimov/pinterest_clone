@@ -1,4 +1,4 @@
-# unsplash_pinterest
+# Pinterest Clone
 
 A new Flutter project.
 
