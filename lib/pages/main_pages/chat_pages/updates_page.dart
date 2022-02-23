@@ -11,7 +11,8 @@ class UpdatePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

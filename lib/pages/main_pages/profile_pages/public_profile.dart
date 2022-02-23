@@ -11,19 +11,18 @@ class PublicProfile extends StatefulWidget {
   _PublicProfileState createState() => _PublicProfileState();
 }
 
-UserProfile user = HiveDB.loadUser();
-
 TextEditingController firsNameController =
-    TextEditingController(text: user.firstName);
+    TextEditingController(text: HiveDB.loadUser().firstName);
 TextEditingController lastNameController =
-    TextEditingController(text: user.lastName);
+    TextEditingController(text: HiveDB.loadUser().lastName);
 TextEditingController userNameController =
-    TextEditingController(text: user.userName);
+    TextEditingController(text: HiveDB.loadUser().userName);
 TextEditingController pronounController =
-    TextEditingController(text: user.pronouns);
-TextEditingController aboutController = TextEditingController(text: user.about);
+    TextEditingController(text: HiveDB.loadUser().pronouns);
+TextEditingController aboutController =
+    TextEditingController(text: HiveDB.loadUser().about);
 TextEditingController websiteController =
-    TextEditingController(text: user.website);
+    TextEditingController(text: HiveDB.loadUser().website);
 
 void saveChanges() {
   String firstName = firsNameController.text.trim();
@@ -36,14 +35,15 @@ void saveChanges() {
       firstName: firstName,
       lastName: lastName,
       userName: userName,
-      email: user.email,
-      gender: user.gender,
-      age: user.age,
-      followers: user.followers,
-      following: user.following,
+      email: HiveDB.loadUser().email,
+      gender: HiveDB.loadUser().gender,
+      age: HiveDB.loadUser().age,
+      followers: HiveDB.loadUser().followers,
+      following: HiveDB.loadUser().following,
       pronouns: pronouns,
       about: about,
-      website: website, country: user.country);
+      website: website,
+      country: HiveDB.loadUser().country);
   HiveDB.storeUser(userProfile);
 }
 
@@ -72,6 +72,8 @@ class _PublicProfileState extends State<PublicProfile> {
               alignment: const Alignment(-0.5, 0.0),
               padding: EdgeInsets.zero,
               onPressed: () {
+                saveChanges();
+                setState(() {});
                 Navigator.pop(context);
               },
               icon: const Icon(
@@ -161,8 +163,9 @@ class _PublicProfileState extends State<PublicProfile> {
       controller: controller..text,
       style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 22),
       cursorColor: Colors.red,
-      onEditingComplete: () {
-        FocusScope.of(context).requestFocus(FocusNode());
+      onSubmitted: (text) {
+        saveChanges();
+        setState(() {});
       },
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,

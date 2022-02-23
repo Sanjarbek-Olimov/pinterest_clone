@@ -1,9 +1,17 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:lottie/lottie.dart';
 import 'package:unsplash_pinterest/models/post_model.dart';
+import 'package:unsplash_pinterest/pages/view_image.dart';
 import 'package:unsplash_pinterest/services/grid_view_service.dart';
+import 'package:unsplash_pinterest/services/hive_service.dart';
 import 'package:unsplash_pinterest/services/http_service.dart';
 
 class DetailsPage extends StatefulWidget {
@@ -23,7 +31,13 @@ class _DetailsPageState extends State<DetailsPage> {
   final ScrollController _scrollController = ScrollController();
   int pageNumber = 0;
   bool isLoading = true;
+  bool initialState = true;
   bool isLoadPage = false;
+  bool isSaved = false;
+  List<Post> saved = [];
+  ConnectivityResult _connectionStatus = ConnectivityResult.values[0];
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   void _apiLoadList() async {
     await Network.GET(Network.API_LIST, Network.paramsEmpty())
@@ -65,10 +79,17 @@ class _DetailsPageState extends State<DetailsPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    initConnectivity();
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    setState(() {
+      saved = HiveDB.loadSavedImage();
+      saved.contains(widget.post) ? isSaved = true : isSaved = false;
+    });
     widget.search != null ? searchPost() : _apiLoadList();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
+          _scrollController.position.maxScrollExtent && _connectionStatus != ConnectivityResult.none) {
         setState(() {
           isLoadPage = true;
         });
@@ -77,10 +98,63 @@ class _DetailsPageState extends State<DetailsPage> {
     });
   }
 
+  Future<void> initConnectivity() async {
+    late ConnectivityResult result;
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print(e);
+      return;
+    }
+    if (!mounted) {
+      return Future.value(null);
+    }
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    setState(() {
+      _connectionStatus = result;
+      if (_connectionStatus != ConnectivityResult.none && !initialState) {
+        fireToast("You are online");
+        Timer(const Duration(seconds: 2), () {
+          isLoading = false;
+          isLoadPage = false;
+          posts.isEmpty ? _apiLoadList() : fetchPosts();
+        });
+      } else if(_connectionStatus == ConnectivityResult.none && !initialState) {
+        fireToast("You are offline. Please, check your Internet connection");
+      }
+    });
+  }
+
+  void fireToast(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 1,
+        backgroundColor: _connectionStatus != ConnectivityResult.none
+            ? Colors.greenAccent
+            : Colors.pinkAccent,
+        textColor: Colors.black,
+        fontSize: 16);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: InkWell(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: const Icon(Icons.arrow_back_ios_rounded)),
+      ),
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Column(
@@ -91,6 +165,7 @@ class _DetailsPageState extends State<DetailsPage> {
                   color: Colors.white, borderRadius: BorderRadius.circular(20)),
               child: Column(
                 children: [
+                  // #post_image
                   ClipRRect(
                     child: Stack(
                       children: [
@@ -108,6 +183,8 @@ class _DetailsPageState extends State<DetailsPage> {
                       topLeft: Radius.circular(20),
                     ),
                   ),
+
+                  // #profile_info
                   ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(50),
@@ -132,6 +209,8 @@ class _DetailsPageState extends State<DetailsPage> {
                       child: const Text("Follow"),
                     ),
                   ),
+
+                  // #post_description
                   widget.post!.description != null
                       ? Container(
                           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -142,6 +221,8 @@ class _DetailsPageState extends State<DetailsPage> {
                           ),
                         )
                       : const SizedBox.shrink(),
+
+                  // #save_view_buttons
                   Container(
                     padding: const EdgeInsets.all(15),
                     child: Row(
@@ -158,10 +239,19 @@ class _DetailsPageState extends State<DetailsPage> {
                             MaterialButton(
                               elevation: 0,
                               height: 60,
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ViewImage(
+                                            url: widget.post!.urls.regular)));
+                              },
                               color: Colors.grey.shade200,
                               shape: const StadiumBorder(),
-                              child: const Text("View", style: TextStyle(fontSize: 18),),
+                              child: const Text(
+                                "View",
+                                style: TextStyle(fontSize: 18),
+                              ),
                             ),
                           ],
                         )),
@@ -175,12 +265,24 @@ class _DetailsPageState extends State<DetailsPage> {
                             MaterialButton(
                               elevation: 0,
                               height: 60,
-                              onPressed: () {},
-                              color: Colors.red,
+                              onPressed: () {
+                                setState(() {
+                                  if (!isSaved) {
+                                    isSaved = true;
+                                    saved.add(widget.post!);
+                                    HiveDB.storeSavedImage(saved);
+                                  }
+                                });
+                              },
+                              color:
+                                  isSaved ? Colors.grey.shade200 : Colors.red,
                               shape: const StadiumBorder(),
-                              child: const Text(
-                                "Save",
-                                style: TextStyle(color: Colors.white, fontSize: 18),
+                              child: Text(
+                                isSaved ? "Saved" : "Save",
+                                style: TextStyle(
+                                    color:
+                                        isSaved ? Colors.black : Colors.white,
+                                    fontSize: 18),
                               ),
                             ),
                             const Icon(
@@ -198,6 +300,8 @@ class _DetailsPageState extends State<DetailsPage> {
             const SizedBox(
               height: 5,
             ),
+
+            // #comment_field
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               decoration: BoxDecoration(
@@ -253,6 +357,8 @@ class _DetailsPageState extends State<DetailsPage> {
                 ],
               ),
             ),
+
+            // #more_like_this
             Container(
               margin: const EdgeInsets.only(top: 5),
               padding: const EdgeInsets.only(top: 15),
@@ -283,16 +389,11 @@ class _DetailsPageState extends State<DetailsPage> {
                           search: widget.search,
                         );
                       }),
-                  isLoading || isLoadPage
-                      ? Container(
-                          alignment: Alignment.bottomCenter,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: const Center(
-                            child: CircularProgressIndicator.adaptive(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.black)),
-                          ),
-                        )
+                  (isLoading || isLoadPage) &&
+                          _connectionStatus != ConnectivityResult.none
+                      ? Center(
+                          child: Lottie.asset("assets/lottie/loading2.json",
+                              height: 50, width: 50))
                       : const SizedBox.shrink(),
                 ],
               ),

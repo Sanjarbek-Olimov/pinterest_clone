@@ -89,6 +89,17 @@ class Post {
     "topic_submissions": topicSubmissions == null ? null : topicSubmissions!.toJson(),
     "user": user == null ? null : user!.toJson(),
   };
+
+  @override
+  bool operator ==(Object other) {
+    // TODO: implement ==
+    return other is Post && id == other.id && urls.regular==other.urls.regular;
+  }
+
+  @override
+  // TODO: implement hashCode
+  int get hashCode => id.hashCode;
+
 }
 
 class PostLinks {

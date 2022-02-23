@@ -4,6 +4,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:unsplash_pinterest/pages/details_page.dart';
 import 'package:unsplash_pinterest/pages/main_pages/chat_pages/chat_page.dart';
 import 'package:unsplash_pinterest/pages/main_pages/home_page.dart';
+import 'package:unsplash_pinterest/pages/main_pages/profile_pages/account_settings.dart';
 import 'package:unsplash_pinterest/pages/main_pages/profile_pages/profile_page.dart';
 import 'package:unsplash_pinterest/pages/main_pages/search_page.dart';
 import 'package:unsplash_pinterest/services/hive_service.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
               SearchPage.id: (context) => const SearchPage(),
               ChatPage.id: (context) => const ChatPage(),
               ProfilePage.id: (context) => const ProfilePage(),
+              AccountSettings.id: (context) => const AccountSettings(),
               DetailsPage.id: (context) => DetailsPage(),
             },
           );

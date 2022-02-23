@@ -1,5 +1,11 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:lottie/lottie.dart';
 import 'package:unsplash_pinterest/models/post_model.dart';
 import 'package:unsplash_pinterest/services/grid_view_service.dart';
 import 'package:unsplash_pinterest/services/http_service.dart';
@@ -16,14 +22,18 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool initialState = true;
   List<Post> posts = [];
   int pageNumber = 0;
   bool isLoading = false;
   bool typing = false;
   String search = "";
+  ConnectivityResult _connectionStatus = ConnectivityResult.values[0];
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   void searchPost() async {
-    if (search.isEmpty) {
+    if (search.isEmpty && _connectionStatus != ConnectivityResult.none) {
       search = "All";
       _controller.text = " ";
     }
@@ -45,6 +55,9 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    initConnectivity();
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
@@ -56,6 +69,46 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  Future<void> initConnectivity() async {
+    late ConnectivityResult result;
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print(e);
+      return;
+    }
+    if (!mounted) {
+      return Future.value(null);
+    }
+    return _updateConnectionStatus(result);
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    setState(() {
+      _connectionStatus = result;
+      if (_connectionStatus != ConnectivityResult.none && !initialState) {
+        fireToast("You are online");
+      } else if (_connectionStatus == ConnectivityResult.none &&
+          !initialState) {
+        fireToast("You are offline. Please, check your Internet connection");
+      }
+      initialState = false;
+    });
+  }
+
+  void fireToast(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 1,
+        backgroundColor: _connectionStatus != ConnectivityResult.none
+            ? Colors.greenAccent
+            : Colors.pinkAccent,
+        textColor: Colors.black,
+        fontSize: 16);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,6 +117,8 @@ class _SearchPageState extends State<SearchPage> {
         child: Container(
           margin:
               const EdgeInsets.only(top: 40, right: 10, left: 10, bottom: 10),
+
+          // #search_text_field
           child: Row(
             children: [
               Flexible(
@@ -76,39 +131,40 @@ class _SearchPageState extends State<SearchPage> {
                   onEditingComplete: () {
                     FocusScope.of(context).requestFocus(FocusNode());
                     setState(() {
-                      isLoading = true;
-                      if (search != _controller.text.trim()) pageNumber = 0;
-                      search = _controller.text.trim();
+                      if (_connectionStatus != ConnectivityResult.none) {
+                        isLoading = true;
+                        if (search != _controller.text.trim()) pageNumber = 0;
+                        search = _controller.text.trim();
+                      }
                     });
                     searchPost();
                   },
                   style: const TextStyle(fontSize: 18),
                   controller: _controller,
                   decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding: const EdgeInsets.only(left: 10),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.circular(50)),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.circular(50)),
-                    filled: true,
-                    fillColor: Colors.grey.shade300,
-                    hintText: "Search for ideas",
-                    hintStyle:
-                        TextStyle(color: Colors.grey.shade700, fontSize: 18),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: Colors.black,
-                      size: 30,
-                    ),
-                    suffixIcon: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.black,
-                      size: 28,
-                    )
-                  ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.only(left: 10),
+                      focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.white),
+                          borderRadius: BorderRadius.circular(50)),
+                      enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.white),
+                          borderRadius: BorderRadius.circular(50)),
+                      filled: true,
+                      fillColor: Colors.grey.shade300,
+                      hintText: "Search for ideas",
+                      hintStyle:
+                          TextStyle(color: Colors.grey.shade700, fontSize: 18),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.black,
+                        size: 30,
+                      ),
+                      suffixIcon: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.black,
+                        size: 28,
+                      )),
                 ),
               ),
               typing
@@ -121,21 +177,21 @@ class _SearchPageState extends State<SearchPage> {
                           pageNumber = 0;
                         });
                       },
-                      child: const Text(" Cancel ", style: TextStyle(fontSize: 17),),
+                      child: const Text(
+                        " Cancel ",
+                        style: TextStyle(fontSize: 17),
+                      ),
                     )
                   : const SizedBox.shrink()
             ],
           ),
         ),
       ),
+
+      // #search_result
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          isLoading
-              ? const LinearProgressIndicator(
-                  backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.red))
-              : const SizedBox.shrink(),
           Expanded(
             child: MasonryGridView.count(
                 controller: _scrollController,
@@ -145,9 +201,19 @@ class _SearchPageState extends State<SearchPage> {
                 mainAxisSpacing: 11,
                 crossAxisSpacing: 10,
                 itemBuilder: (context, index) {
-                  return GridWidget(post: posts[index], search: search,);
+                  return GridWidget(
+                    post: posts[index],
+                    search: search,
+                  );
                 }),
           ),
+          isLoading && _connectionStatus != ConnectivityResult.none
+              ? Center(
+                  child: Padding(
+                      padding: const EdgeInsets.only(bottom: 90),
+                      child: Lottie.asset("assets/lottie/loading2.json",
+                          height: 50, width: 50)))
+              : const SizedBox.shrink(),
         ],
       ),
     );

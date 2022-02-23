@@ -52,7 +52,9 @@ class _ChatPageState extends State<ChatPage> {
                     setState(() {
                       selectedIndex = index;
                     });
-                    _pageController.animateToPage(selectedIndex, duration: const Duration(milliseconds: 250), curve: Curves.linear);
+                    _pageController.animateToPage(selectedIndex,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.linear);
                   },
                   labelPadding: EdgeInsets.zero,
                   indicator: const UnderlineTabIndicator(
@@ -110,6 +112,7 @@ class _ChatPageState extends State<ChatPage> {
                   });
                 },
                 children: [
+                  // #update_page
                   RefreshIndicator(
                     onRefresh: () async {
                       setState(() {
@@ -125,7 +128,9 @@ class _ChatPageState extends State<ChatPage> {
                       padding: const EdgeInsets.only(top: 10),
                     ),
                   ),
-                 const MessagePage(),
+
+                  // #message_page
+                  const MessagePage(),
                 ],
               ))
             ],
