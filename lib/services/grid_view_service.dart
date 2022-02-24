@@ -84,72 +84,71 @@ class _GridWidgetState extends State<GridWidget> {
     return isHidden
         ? const SizedBox.shrink()
         : InkWell(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DetailsPage(
-                            post: widget.post,
-                            search: widget.search,
-                          )));
-            },
-            child: Column(
-              children: [
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => DetailsPage(
+                          post: widget.post,
+                          search: widget.search,
+                        )));
+          },
+          child: Column(
+            children: [
+              // #post_image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: CachedNetworkImage(
+                  imageUrl: widget.post.urls.regular,
+                  placeholder: (context, url) => AspectRatio(
+                      aspectRatio: widget.post.width! / widget.post.height!,
+                      child: Container(
+                        color: Utils.getColorFromHex(widget.post.color!),
+                      )),
+                  errorWidget: (context, url, error) => AspectRatio(
+                      aspectRatio: widget.post.width! / widget.post.height!,
+                      child: Container(
+                        color: Utils.getColorFromHex(widget.post.color!),
+                      )),
+                ),
+              ),
 
-                // #post_image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.post.urls.regular,
-                    placeholder: (context, url) => AspectRatio(
-                        aspectRatio: widget.post.width! / widget.post.height!,
-                        child: Container(
-                          color: Utils.getColorFromHex(widget.post.color!),
-                        )),
-                    errorWidget: (context, url, error) => AspectRatio(
-                        aspectRatio: widget.post.width! / widget.post.height!,
-                        child: Container(
-                          color: Utils.getColorFromHex(widget.post.color!),
-                        )),
+              // #profile_info
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                horizontalTitleGap: 0,
+                minVerticalPadding: 0,
+                leading: SizedBox(
+                  height: 30,
+                  width: 30,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CachedNetworkImage(
+                      fit: BoxFit.cover,
+                      imageUrl: widget.post.user!.profileImage!.large!,
+                      placeholder: (context, url) =>
+                          Image.asset("assets/images/default.png"),
+                      errorWidget: (context, url, error) =>
+                          Image.asset("assets/images/default.png"),
+                    ),
                   ),
                 ),
-
-                // #profile_info
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  horizontalTitleGap: 0,
-                  minVerticalPadding: 0,
-                  leading: SizedBox(
-                    height: 30,
-                    width: 30,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                      child: CachedNetworkImage(
-                        fit: BoxFit.cover,
-                        imageUrl: widget.post.user!.profileImage!.large!,
-                        placeholder: (context, url) =>
-                            Image.asset("assets/images/default.png"),
-                        errorWidget: (context, url, error) =>
-                            Image.asset("assets/images/default.png"),
-                      ),
-                    ),
+                title: Text(widget.post.user!.name!),
+                trailing: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () {
+                    more();
+                  },
+                  child: const Icon(
+                    Icons.more_horiz,
+                    color: Colors.black,
                   ),
-                  title: Text(widget.post.user!.name!),
-                  trailing: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () {
-                      more();
-                    },
-                    child: const Icon(
-                      Icons.more_horiz,
-                      color: Colors.black,
-                    ),
-                  ),
-                )
-              ],
-            ),
-          );
+                ),
+              )
+            ],
+          ),
+        );
   }
 
   // #menu_button
@@ -215,7 +214,7 @@ class _GridWidgetState extends State<GridWidget> {
                         setState(() {
                           isHidden = true;
                           List<Post> saved = HiveDB.loadSavedImage();
-                          if(saved.contains(widget.post)){
+                          if (saved.contains(widget.post)) {
                             saved.remove(widget.post);
                             isHidden = false;
                           }
@@ -229,7 +228,6 @@ class _GridWidgetState extends State<GridWidget> {
                             fontWeight: FontWeight.w500, fontSize: 22),
                       )),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: InkWell(

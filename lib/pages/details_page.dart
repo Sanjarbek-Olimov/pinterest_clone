@@ -6,20 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unsplash_pinterest/models/post_model.dart';
 import 'package:unsplash_pinterest/pages/view_image.dart';
+import 'package:unsplash_pinterest/services/dio_service.dart';
 import 'package:unsplash_pinterest/services/grid_view_service.dart';
 import 'package:unsplash_pinterest/services/hive_service.dart';
-import 'package:unsplash_pinterest/services/http_service.dart';
 
 class DetailsPage extends StatefulWidget {
   static const String id = "details_page";
   Post? post;
   String? search;
+  String? tag;
 
-  DetailsPage({Key? key, this.post, this.search}) : super(key: key);
+  DetailsPage({Key? key, this.post, this.search, this.tag}) : super(key: key);
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
@@ -40,14 +40,14 @@ class _DetailsPageState extends State<DetailsPage> {
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   void _apiLoadList() async {
-    await Network.GET(Network.API_LIST, Network.paramsEmpty())
+    await NetworkDio.GET(NetworkDio.API_LIST, NetworkDio.paramsEmpty())
         .then((response) => {_showResponse(response!)});
   }
 
   void _showResponse(String response) {
     setState(() {
       isLoading = false;
-      posts = Network.parseResponse(response);
+      posts = NetworkDio.parseResponse(response);
       postsLength = posts.length;
     });
   }
@@ -55,8 +55,8 @@ class _DetailsPageState extends State<DetailsPage> {
   void fetchPosts() async {
     int pageNumber = (posts.length ~/ postsLength + 1);
     String? response =
-        await Network.GET(Network.API_LIST, Network.paramsPage(pageNumber));
-    List<Post> newPosts = Network.parseResponse(response!);
+        await NetworkDio.GET(NetworkDio.API_LIST, NetworkDio.paramsPage(pageNumber));
+    List<Post> newPosts = NetworkDio.parseResponse(response!);
     posts.addAll(newPosts);
     setState(() {
       isLoadPage = false;
@@ -65,9 +65,9 @@ class _DetailsPageState extends State<DetailsPage> {
 
   void searchPost() async {
     pageNumber += 1;
-    String? response = await Network.GET(
-        Network.API_SEARCH, Network.paramsSearch(widget.search!, pageNumber));
-    List<Post> newPosts = Network.parseSearchParse(response!);
+    String? response = await NetworkDio.GET(
+        NetworkDio.API_SEARCH, NetworkDio.paramsSearch(widget.search!, pageNumber));
+    List<Post> newPosts = NetworkDio.parseSearchParse(response!);
     setState(() {
       posts.addAll(newPosts);
       isLoading = false;

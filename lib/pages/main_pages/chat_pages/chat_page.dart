@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:unsplash_pinterest/models/collections_model.dart';
 import 'package:unsplash_pinterest/pages/main_pages/chat_pages/message_page.dart';
 import 'package:unsplash_pinterest/pages/main_pages/chat_pages/updates_page.dart';
+import 'package:unsplash_pinterest/services/dio_service.dart';
 import 'package:unsplash_pinterest/services/http_service.dart';
 
 class ChatPage extends StatefulWidget {
@@ -19,13 +20,13 @@ class _ChatPageState extends State<ChatPage> {
   final PageController _pageController = PageController();
 
   void _apiLoadList() async {
-    await Network.GET(Network.API_COLLECTIONS, Network.paramsEmpty())
+    await NetworkDio.GET(NetworkDio.API_COLLECTIONS, NetworkDio.paramsEmpty())
         .then((response) => {_showResponse(response!)});
   }
 
   void _showResponse(String response) {
     setState(() {
-      collections = Network.parseCollectionResponse(response);
+      collections = NetworkDio.parseCollectionResponse(response);
     });
   }
 

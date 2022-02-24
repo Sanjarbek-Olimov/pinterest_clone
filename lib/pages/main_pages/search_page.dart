@@ -7,6 +7,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unsplash_pinterest/models/post_model.dart';
+import 'package:unsplash_pinterest/services/dio_service.dart';
 import 'package:unsplash_pinterest/services/grid_view_service.dart';
 import 'package:unsplash_pinterest/services/http_service.dart';
 
@@ -38,9 +39,9 @@ class _SearchPageState extends State<SearchPage> {
       _controller.text = " ";
     }
     pageNumber += 1;
-    String? response = await Network.GET(
-        Network.API_SEARCH, Network.paramsSearch(search, pageNumber));
-    List<Post> newPosts = Network.parseSearchParse(response!);
+    String? response = await NetworkDio.GET(
+        NetworkDio.API_SEARCH, NetworkDio.paramsSearch(search, pageNumber));
+    List<Post> newPosts = NetworkDio.parseSearchParse(response!);
     setState(() {
       if (pageNumber == 1) {
         posts = newPosts;

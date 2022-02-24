@@ -11,6 +11,7 @@ import 'package:unsplash_pinterest/models/post_model.dart';
 import 'package:unsplash_pinterest/pages/main_pages/chat_pages/chat_page.dart';
 import 'package:unsplash_pinterest/pages/main_pages/profile_pages/profile_page.dart';
 import 'package:unsplash_pinterest/pages/main_pages/search_page.dart';
+import 'package:unsplash_pinterest/services/dio_service.dart';
 import 'package:unsplash_pinterest/services/grid_view_service.dart';
 import 'package:unsplash_pinterest/services/http_service.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -31,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   bool isHidden = false;
   bool isLoadPage = false;
   List<Post> posts = [];
-  int postsLength = 0;
+  int pageNumber = 0;
   final ScrollController _scrollController = ScrollController();
   ConnectivityResult _connectionStatus = ConnectivityResult.values[0];
   final Connectivity _connectivity = Connectivity();
@@ -39,25 +40,28 @@ class _HomePageState extends State<HomePage> {
 
   // #getting_post_from_api
   void _apiLoadList() async {
-    await Network.GET(Network.API_LIST, Network.paramsEmpty())
-        .then((response) => {_showResponse(response!)});
+    await NetworkDio.GET(NetworkDio.API_LIST, NetworkDio.paramsEmpty())
+        .then((response) => {_showResponse(response)});
   }
 
-  void _showResponse(String response) {
+  void _showResponse(String? response) {
     setState(() {
       isLoading = false;
-      posts = Network.parseResponse(response);
+      if(response !=null){
+        posts = NetworkDio.parseResponse(response);
+      }
       posts.shuffle();
-      postsLength = posts.length;
     });
   }
 
   // #fetching_posts_from_api
   void fetchPosts() async {
-    int pageNumber = (posts.length ~/ postsLength + 1);
+    setState(() {
+      pageNumber +=1;
+    });
     String? response =
-        await Network.GET(Network.API_LIST, Network.paramsPage(pageNumber));
-    List<Post> newPosts = Network.parseResponse(response!);
+        await NetworkDio.GET(NetworkDio.API_LIST, NetworkDio.paramsPage(pageNumber));
+    List<Post> newPosts = NetworkDio.parseResponse(response!);
     posts.addAll(newPosts);
     setState(() {
       isLoadPage = false;
