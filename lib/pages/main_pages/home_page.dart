@@ -122,7 +122,6 @@ class _HomePageState extends State<HomePage> {
             isLoading = true;
         }
         Timer(const Duration(seconds: 2), () {
-            isLoading = false;
             posts.isEmpty ? _apiLoadList() : fetchPosts();
         });
       } else {
