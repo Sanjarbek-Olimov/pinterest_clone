@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
       _connectionStatus = result;
       if (_connectionStatus != ConnectivityResult.none) {
         if (posts.isNotEmpty) {
-          snackbar("You are online");
+          snackBar("You are online");
         } else {
           isLoading = true;
         }
@@ -134,13 +134,13 @@ class _HomePageState extends State<HomePage> {
         });
       } else {
         if (posts.isNotEmpty) {
-          snackbar("You are offline. Please, check your Internet connection");
+          snackBar("You are offline. Please, check your Internet connection");
         }
       }
     });
   }
 
-  void snackbar(String text){
+  void snackBar(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.pinkAccent,
         dismissDirection: DismissDirection.none,
@@ -160,6 +160,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const PageStorageKey("Home Page"),
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -273,13 +274,13 @@ class _HomePageState extends State<HomePage> {
                       ),
 
                       // #search_page
-                      const SearchPage(),
+                      const SearchPage(key: PageStorageKey("Search Page"),),
 
                       // #chat_page
-                      const ChatPage(),
+                      const ChatPage(key: PageStorageKey("Chat Page"),),
 
                       // #profile_page
-                      const ProfilePage()
+                      const ProfilePage(key: PageStorageKey("Profile Page"))
                     ],
                   ),
                 ),

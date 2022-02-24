@@ -88,6 +88,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(valueListenable: HiveDB.box.listenable(), builder: (BuildContext context, box, Widget? child){
       return Scaffold(
+        key: widget.key,
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,

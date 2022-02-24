@@ -89,7 +89,8 @@ class _DetailsPageState extends State<DetailsPage> {
     widget.search != null ? searchPost() : _apiLoadList();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent && _connectionStatus != ConnectivityResult.none) {
+              _scrollController.position.maxScrollExtent &&
+          _connectionStatus != ConnectivityResult.none) {
         setState(() {
           isLoadPage = true;
         });
@@ -116,19 +117,20 @@ class _DetailsPageState extends State<DetailsPage> {
     setState(() {
       _connectionStatus = result;
       if (_connectionStatus != ConnectivityResult.none && !initialState) {
-        snackbar("You are online");
+        snackBar("You are online");
         Timer(const Duration(seconds: 2), () {
           isLoading = false;
           isLoadPage = false;
           posts.isEmpty ? _apiLoadList() : fetchPosts();
         });
-      } else if(_connectionStatus == ConnectivityResult.none && !initialState) {
-        snackbar("You are offline. Please, check your Internet connection");
+      } else if (_connectionStatus == ConnectivityResult.none &&
+          !initialState) {
+        snackBar("You are offline. Please, check your Internet connection");
       }
     });
   }
 
-  void snackbar(String text){
+  void snackBar(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.pinkAccent,
         dismissDirection: DismissDirection.none,

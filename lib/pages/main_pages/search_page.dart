@@ -87,16 +87,16 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       _connectionStatus = result;
       if (_connectionStatus != ConnectivityResult.none && !initialState) {
-        snackbar("You are online");
+        snackBar("You are online");
       } else if (_connectionStatus == ConnectivityResult.none &&
           !initialState) {
-        snackbar("You are offline. Please, check your Internet connection");
+        snackBar("You are offline. Please, check your Internet connection");
       }
       initialState = false;
     });
   }
 
-  void snackbar(String text){
+  void snackBar(String text){
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.pinkAccent,
         dismissDirection: DismissDirection.none,
@@ -116,6 +116,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: widget.key,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: Container(

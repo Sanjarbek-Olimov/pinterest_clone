@@ -39,6 +39,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: widget.key,
       resizeToAvoidBottomInset: false,
       body: Padding(
           padding: const EdgeInsets.all(8.0),
