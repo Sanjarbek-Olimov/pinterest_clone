@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -75,11 +75,19 @@ class _HomePageState extends State<HomePage> {
 
     _apiLoadList();
     _scrollController.addListener(() {
+      setState(() {
+        if (_scrollController.position.userScrollDirection ==
+            ScrollDirection.forward) {
+          isHidden = false;
+          isLoadPage = false;
+        }
+      });
       if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent && _connectionStatus != ConnectivityResult.none) {
+              _scrollController.position.maxScrollExtent &&
+          _connectionStatus != ConnectivityResult.none) {
         setState(() {
-            isLoadPage = true;
-            isHidden = true;
+          isLoadPage = true;
+          isHidden = true;
         });
         fetchPosts();
       }
@@ -119,10 +127,10 @@ class _HomePageState extends State<HomePage> {
         if (posts.isNotEmpty) {
           fireToast("You are online");
         } else {
-            isLoading = true;
+          isLoading = true;
         }
         Timer(const Duration(seconds: 2), () {
-            posts.isEmpty ? _apiLoadList() : fetchPosts();
+          posts.isEmpty ? _apiLoadList() : fetchPosts();
         });
       } else {
         if (posts.isNotEmpty) {
