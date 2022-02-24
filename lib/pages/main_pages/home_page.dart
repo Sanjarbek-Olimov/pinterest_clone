@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
       _connectionStatus = result;
       if (_connectionStatus != ConnectivityResult.none) {
         if (posts.isNotEmpty) {
-          fireToast("You are online");
+          snackbar("You are online");
         } else {
           isLoading = true;
         }
@@ -134,23 +134,27 @@ class _HomePageState extends State<HomePage> {
         });
       } else {
         if (posts.isNotEmpty) {
-          fireToast("You are offline. Please, check your Internet connection");
+          snackbar("You are offline. Please, check your Internet connection");
         }
       }
     });
   }
 
-  void fireToast(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
-        timeInSecForIosWeb: 1,
-        backgroundColor: _connectionStatus != ConnectivityResult.none
-            ? Colors.greenAccent
-            : Colors.pinkAccent,
-        textColor: Colors.black,
-        fontSize: 16);
+  void snackbar(String text){
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: Colors.pinkAccent,
+        dismissDirection: DismissDirection.none,
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 200,
+            left: 15,
+            right: 15),
+        content: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(height: 1.5),
+        )));
   }
 
   @override
