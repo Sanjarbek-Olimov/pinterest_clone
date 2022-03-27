@@ -48,12 +48,12 @@ class _GridWidgetState extends State<GridWidget> {
     var permission = await _getPermission(Permission.storage);
     try {
       if (permission != false) {
-        var httpClient = Client();
-        var request = Request('GET', Uri.parse(url));
-        var res = httpClient.send(request);
+        // var httpClient = Client();
+        // var request = Request('GET', Uri.parse(url));
+        // // var res = httpClient.send(request);
         final response = await get(Uri.parse(url));
         Directory generalDownloadDir =
-            Directory('/storage/emulated/0/Download');
+        Directory('/storage/emulated/0/Download');
         File imageFile = File("${generalDownloadDir.path}/$filename.jpg");
         await imageFile.writeAsBytes(response.bodyBytes);
         fireToast("Image downloaded");
@@ -84,71 +84,74 @@ class _GridWidgetState extends State<GridWidget> {
     return isHidden
         ? const SizedBox.shrink()
         : InkWell(
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => DetailsPage(
-                          post: widget.post,
-                          search: widget.search,
-                        )));
-          },
-          child: Column(
-            children: [
-              // #post_image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    DetailsPage(
+                      post: widget.post,
+                      search: widget.search,
+                    )));
+      },
+      child: Column(
+        children: [
+          // #post_image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: CachedNetworkImage(
+              imageUrl: widget.post.urls.regular,
+              placeholder: (context, url) =>
+                  AspectRatio(
+                      aspectRatio: widget.post.width! / widget.post.height!,
+                      child: Container(
+                        color: Utils.getColorFromHex(widget.post.color!),
+                      )),
+              errorWidget: (context, url, error) =>
+                  AspectRatio(
+                      aspectRatio: widget.post.width! / widget.post.height!,
+                      child: Container(
+                        color: Utils.getColorFromHex(widget.post.color!),
+                      )),
+            ),
+          ),
+
+          // #profile_info
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            horizontalTitleGap: 0,
+            minVerticalPadding: 0,
+            leading: SizedBox(
+              height: 30,
+              width: 30,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
                 child: CachedNetworkImage(
-                  imageUrl: widget.post.urls.regular,
-                  placeholder: (context, url) => AspectRatio(
-                      aspectRatio: widget.post.width! / widget.post.height!,
-                      child: Container(
-                        color: Utils.getColorFromHex(widget.post.color!),
-                      )),
-                  errorWidget: (context, url, error) => AspectRatio(
-                      aspectRatio: widget.post.width! / widget.post.height!,
-                      child: Container(
-                        color: Utils.getColorFromHex(widget.post.color!),
-                      )),
+                  fit: BoxFit.cover,
+                  imageUrl: widget.post.user!.profileImage!.large!,
+                  placeholder: (context, url) =>
+                      Image.asset("assets/images/default.png"),
+                  errorWidget: (context, url, error) =>
+                      Image.asset("assets/images/default.png"),
                 ),
               ),
-
-              // #profile_info
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-                horizontalTitleGap: 0,
-                minVerticalPadding: 0,
-                leading: SizedBox(
-                  height: 30,
-                  width: 30,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CachedNetworkImage(
-                      fit: BoxFit.cover,
-                      imageUrl: widget.post.user!.profileImage!.large!,
-                      placeholder: (context, url) =>
-                          Image.asset("assets/images/default.png"),
-                      errorWidget: (context, url, error) =>
-                          Image.asset("assets/images/default.png"),
-                    ),
-                  ),
-                ),
-                title: Text(widget.post.user!.name!),
-                trailing: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    more();
-                  },
-                  child: const Icon(
-                    Icons.more_horiz,
-                    color: Colors.black,
-                  ),
-                ),
-              )
-            ],
-          ),
-        );
+            ),
+            title: Text(widget.post.user!.name!),
+            trailing: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                more();
+              },
+              child: const Icon(
+                Icons.more_horiz,
+                color: Colors.black,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   // #menu_button
@@ -157,7 +160,10 @@ class _GridWidgetState extends State<GridWidget> {
         context: context,
         builder: (context) {
           return Container(
-            height: MediaQuery.of(context).size.height * 0.52,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height * 0.52,
             padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,14 +255,14 @@ class _GridWidgetState extends State<GridWidget> {
                 ),
                 Expanded(
                     child: Container(
-                  alignment: Alignment.bottomLeft,
-                  padding: const EdgeInsets.all(10),
-                  child:
+                      alignment: Alignment.bottomLeft,
+                      padding: const EdgeInsets.all(10),
+                      child:
                       const Text("This Pin is inspired by your recent activity",
                           style: TextStyle(
                             fontSize: 18,
                           )),
-                ))
+                    ))
               ],
             ),
           );

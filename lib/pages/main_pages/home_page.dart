@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:unsplash_pinterest/models/post_model.dart';
 import 'package:unsplash_pinterest/pages/main_pages/chat_pages/chat_page.dart';
@@ -13,7 +12,6 @@ import 'package:unsplash_pinterest/pages/main_pages/profile_pages/profile_page.d
 import 'package:unsplash_pinterest/pages/main_pages/search_page.dart';
 import 'package:unsplash_pinterest/services/dio_service.dart';
 import 'package:unsplash_pinterest/services/grid_view_service.dart';
-import 'package:unsplash_pinterest/services/http_service.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class HomePage extends StatefulWidget {
@@ -164,7 +162,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: const PageStorageKey("Home Page"),
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -278,13 +275,13 @@ class _HomePageState extends State<HomePage> {
                       ),
 
                       // #search_page
-                      const SearchPage(key: PageStorageKey("Search Page"),),
+                      const SearchPage(),
 
                       // #chat_page
-                      const ChatPage(key: PageStorageKey("Chat Page"),),
+                      const ChatPage(),
 
                       // #profile_page
-                      const ProfilePage(key: PageStorageKey("Profile Page"))
+                      const ProfilePage()
                     ],
                   ),
                 ),

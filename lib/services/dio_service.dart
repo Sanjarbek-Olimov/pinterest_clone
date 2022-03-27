@@ -43,6 +43,16 @@ class NetworkDio {
     return null;
   }
 
+  static Future<String?> MULTIPART(String api, String path) async {
+    Response response = await dio.post(api, data: {
+      "file":await MultipartFile.fromFile(path, filename: "test")
+    });
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return jsonEncode(response.data);
+    }
+    return null;
+  }
+
   static Future<String?> PUT(String api, Map<String, dynamic> params) async {
     Response response = await dio.put(api, data: params);// http or https
     if (response.statusCode == 200 || response.statusCode == 201) {
